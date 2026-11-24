@@ -1,5 +1,8 @@
 #!/bin/sh
 
+PATH="/opt/jq:${PATH}"
+export PATH
+
 set -eu
 
 SCRIPT_DIR=/scripts

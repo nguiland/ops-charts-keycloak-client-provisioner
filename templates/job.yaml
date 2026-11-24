@@ -30,10 +30,6 @@ spec:
           args:
             - |
               set -eu
-
-              echo "Installing jq..."
-              apk add --no-cache jq
-
               echo "Starting Keycloak client provisioning..."
               exec /bin/sh /scripts/provision.sh
           env:
@@ -101,8 +97,15 @@ spec:
             - name: scripts
               mountPath: /scripts
               readOnly: true
+            - name: jq
+              mountPath: /opt/jq
+              readOnly: true
       volumes:
         - name: scripts
           configMap:
             name: {{ include "keycloak-client-provisioner.fullname" . }}
             defaultMode: 0555
+        - name: jq
+          image:
+            reference: {{ .Values.jq.image.reference | quote }}
+            pullPolicy: {{ .Values.jq.image.pullPolicy | default "IfNotPresent" }}

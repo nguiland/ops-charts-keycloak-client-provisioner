@@ -51,11 +51,10 @@ serviceAccount:
   annotations: {}
   name: ""
 
-# apk needs root privileges and a writable filesystem.
 podSecurityContext:
-  runAsNonRoot: false
-  runAsUser: 0
-  runAsGroup: 0
+  runAsNonRoot: true
+  runAsUser: 1001
+  runAsGroup: 1001
   seccompProfile:
     type: RuntimeDefault
 
@@ -81,3 +80,8 @@ job:
   # Maximum time spent waiting for Keycloak.
   readinessAttempts: 60
   readinessIntervalSeconds: 5
+
+jq:
+  image:
+    reference: ghcr.io/jqlang/jq@sha256:b9c68867e5766576263a222e91db3de422d802069c7af70440e667a95344e486
+    pullPolicy: IfNotPresent
