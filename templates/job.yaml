@@ -1,0 +1,108 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "keycloak-client-provisioner.fullname" . }}
+  labels:
+    {{- include "keycloak-client-provisioner.labels" . | nindent 4 }}
+  annotations:
+    helm.sh/hook: post-install,post-upgrade
+    helm.sh/hook-delete-policy: before-hook-creation,hook-succeeded
+spec:
+  backoffLimit: {{ .Values.job.backoffLimit }}
+  activeDeadlineSeconds: {{ .Values.job.activeDeadlineSeconds }}
+  template:
+    metadata:
+      labels:
+        {{- include "keycloak-client-provisioner.selectorLabels" . | nindent 8 }}
+    spec:
+      restartPolicy: Never
+      serviceAccountName: {{ include "keycloak-client-provisioner.serviceAccountName" . }}
+      automountServiceAccountToken: {{ .Values.serviceAccount.automount }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: provisioner
+          image: {{ include "keycloak-client-provisioner.image" . | quote }}
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          command:
+            - /bin/sh
+            - -c
+          args:
+            - |
+              set -eu
+
+              echo "Installing jq..."
+              apk add --no-cache jq
+
+              echo "Starting Keycloak client provisioning..."
+              exec /bin/sh /scripts/provision.sh
+          env:
+            - name: KEYCLOAK_URL
+              value: {{ .Values.keycloak.url | quote }}
+            - name: KEYCLOAK_ADMIN_REALM
+              value: {{ .Values.keycloak.adminRealm | quote }}
+            - name: KEYCLOAK_REALM
+              value: {{ .Values.keycloak.realm | quote }}
+            - name: KEYCLOAK_ADMIN_USERNAME
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.keycloak.adminSecret.name }}
+                  key: {{ .Values.keycloak.adminSecret.usernameKey }}
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: {{ .Values.keycloak.adminSecret.name }}
+                  key: {{ .Values.keycloak.adminSecret.passwordKey }}
+            - name: CLIENT_ID
+              value: {{ .Values.client.id | quote }}
+            - name: CLIENT_NAME
+              value: {{ .Values.client.name | quote }}
+            - name: CLIENT_ENABLED
+              value: {{ .Values.client.enabled | toJson | quote }}
+            - name: CLIENT_AUTHENTICATOR_TYPE
+              value: {{ .Values.client.clientAuthenticatorType | quote }}
+            - name: CLIENT_STANDARD_FLOW_ENABLED
+              value: {{ .Values.client.standardFlowEnabled | toJson | quote }}
+            - name: CLIENT_DIRECT_ACCESS_GRANTS_ENABLED
+              value: {{ .Values.client.directAccessGrantsEnabled | toJson | quote }}
+            - name: CLIENT_SERVICE_ACCOUNTS_ENABLED
+              value: {{ .Values.client.serviceAccountsEnabled | toJson | quote }}
+            - name: CLIENT_IMPLICIT_FLOW_ENABLED
+              value: {{ .Values.client.implicitFlowEnabled | toJson | quote }}
+            - name: CLIENT_REDIRECT_URIS
+              value: {{ .Values.client.redirectUris | toJson | quote }}
+            - name: CLIENT_WEB_ORIGINS
+              value: {{ .Values.client.webOrigins | toJson | quote }}
+            - name: CLIENT_ROOT_URL
+              value: {{ .Values.client.rootUrl | quote }}
+            - name: CLIENT_BASE_URL
+              value: {{ .Values.client.baseUrl | quote }}
+            - name: CLIENT_FRONTCHANNEL_LOGOUT
+              value: {{ .Values.client.frontchannelLogout | toJson | quote }}
+            - name: CLIENT_CONSENT_REQUIRED
+              value: {{ .Values.client.consentRequired | toJson | quote }}
+            - name: CLIENT_ATTRIBUTES
+              value: {{ .Values.client.attributes | toJson | quote }}
+            - name: OUTPUT_SECRET_NAME
+              value: {{ .Values.outputSecret.name | quote }}
+            - name: OUTPUT_SECRET_CLIENT_ID_KEY
+              value: {{ .Values.outputSecret.clientIdKey | quote }}
+            - name: OUTPUT_SECRET_CLIENT_SECRET_KEY
+              value: {{ .Values.outputSecret.clientSecretKey | quote }}
+            - name: READINESS_ATTEMPTS
+              value: {{ .Values.job.readinessAttempts | quote }}
+            - name: READINESS_INTERVAL_SECONDS
+              value: {{ .Values.job.readinessIntervalSeconds | quote }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            - name: scripts
+              mountPath: /scripts
+              readOnly: true
+      volumes:
+        - name: scripts
+          configMap:
+            name: {{ include "keycloak-client-provisioner.fullname" . }}
+            defaultMode: 0555

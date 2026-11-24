@@ -1,0 +1,221 @@
+{
+  "$schema": "https://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "required": [
+    "image",
+    "keycloak",
+    "client",
+    "outputSecret",
+    "serviceAccount",
+    "podSecurityContext",
+    "securityContext",
+    "resources",
+    "job"
+  ],
+  "properties": {
+    "image": {
+      "type": "object",
+      "required": ["repository", "digest", "pullPolicy"],
+      "properties": {
+        "repository": {
+          "type": "string",
+          "minLength": 1
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^sha256:[a-f0-9]{64}$"
+        },
+        "pullPolicy": {
+          "type": "string",
+          "enum": ["Always", "IfNotPresent", "Never"]
+        }
+      }
+    },
+    "nameOverride": {
+      "type": "string"
+    },
+    "fullnameOverride": {
+      "type": "string"
+    },
+    "keycloak": {
+      "type": "object",
+      "required": ["url", "adminRealm", "realm", "adminSecret"],
+      "properties": {
+        "url": {
+          "type": "string",
+          "format": "uri"
+        },
+        "adminRealm": {
+          "type": "string",
+          "minLength": 1
+        },
+        "realm": {
+          "type": "string",
+          "minLength": 1
+        },
+        "adminSecret": {
+          "type": "object",
+          "required": ["name", "usernameKey", "passwordKey"],
+          "properties": {
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "usernameKey": {
+              "type": "string",
+              "minLength": 1
+            },
+            "passwordKey": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "client": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "enabled",
+        "clientAuthenticatorType",
+        "standardFlowEnabled",
+        "directAccessGrantsEnabled",
+        "serviceAccountsEnabled",
+        "implicitFlowEnabled",
+        "redirectUris",
+        "webOrigins",
+        "attributes"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "enabled": {
+          "type": "boolean"
+        },
+        "clientAuthenticatorType": {
+          "type": "string",
+          "minLength": 1
+        },
+        "standardFlowEnabled": {
+          "type": "boolean"
+        },
+        "directAccessGrantsEnabled": {
+          "type": "boolean"
+        },
+        "serviceAccountsEnabled": {
+          "type": "boolean"
+        },
+        "implicitFlowEnabled": {
+          "type": "boolean"
+        },
+        "redirectUris": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "webOrigins": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rootUrl": {
+          "type": "string"
+        },
+        "baseUrl": {
+          "type": "string"
+        },
+        "frontchannelLogout": {
+          "type": "boolean"
+        },
+        "consentRequired": {
+          "type": "boolean"
+        },
+        "attributes": {
+          "type": "object"
+        }
+      }
+    },
+    "outputSecret": {
+      "type": "object",
+      "required": ["name", "clientIdKey", "clientSecretKey"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clientIdKey": {
+          "type": "string",
+          "minLength": 1
+        },
+        "clientSecretKey": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "serviceAccount": {
+      "type": "object",
+      "required": ["create", "automount", "annotations", "name"],
+      "properties": {
+        "create": {
+          "type": "boolean"
+        },
+        "automount": {
+          "type": "boolean"
+        },
+        "annotations": {
+          "type": "object"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "podSecurityContext": {
+      "type": "object"
+    },
+    "securityContext": {
+      "type": "object"
+    },
+    "resources": {
+      "type": "object"
+    },
+    "job": {
+      "type": "object",
+      "required": [
+        "backoffLimit",
+        "activeDeadlineSeconds",
+        "readinessAttempts",
+        "readinessIntervalSeconds"
+      ],
+      "properties": {
+        "backoffLimit": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "activeDeadlineSeconds": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "readinessAttempts": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "readinessIntervalSeconds": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
+  }
+}

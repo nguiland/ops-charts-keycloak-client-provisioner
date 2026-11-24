@@ -1,0 +1,6 @@
+apiVersion: v2
+name: keycloak-client-provisioner
+description: Provisions Keycloak OIDC clients and synchronizes their credentials to Kubernetes Secrets
+type: application
+version: 0.1.0
+appVersion: "0.1.0"

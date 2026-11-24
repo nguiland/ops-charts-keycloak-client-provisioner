@@ -1,0 +1,83 @@
+image:
+  repository: alpine/kubectl
+  digest: sha256:02791a008d526a0b2ca9edc9692d86933b4a164e64d1c012eb46e30fca18d818
+  pullPolicy: IfNotPresent
+
+nameOverride: ""
+fullnameOverride: ""
+
+keycloak:
+  url: http://keycloak-http
+  adminRealm: master
+  realm: applications
+  adminSecret:
+    name: keycloak-admin
+    usernameKey: username
+    passwordKey: password
+
+client:
+  id: ""
+  name: ""
+  enabled: true
+
+  # This implementation provisions confidential clients.
+  clientAuthenticatorType: client-secret
+
+  standardFlowEnabled: true
+  directAccessGrantsEnabled: false
+  serviceAccountsEnabled: false
+  implicitFlowEnabled: false
+
+  redirectUris: []
+  webOrigins: []
+
+  rootUrl: ""
+  baseUrl: ""
+
+  frontchannelLogout: false
+  consentRequired: false
+
+  # Additional Keycloak client attributes.
+  attributes: {}
+
+outputSecret:
+  name: ""
+  clientIdKey: client-id
+  clientSecretKey: client-secret
+
+serviceAccount:
+  create: true
+  automount: true
+  annotations: {}
+  name: ""
+
+# apk needs root privileges and a writable filesystem.
+podSecurityContext:
+  runAsNonRoot: false
+  runAsUser: 0
+  runAsGroup: 0
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 64Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+
+job:
+  backoffLimit: 3
+  activeDeadlineSeconds: 600
+
+  # Maximum time spent waiting for Keycloak.
+  readinessAttempts: 60
+  readinessIntervalSeconds: 5

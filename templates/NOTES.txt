@@ -1,0 +1,54 @@
+Keycloak Client Provisioner has been installed successfully.
+
+The provisioner runs as a Kubernetes Job during Helm installation and upgrades.
+It creates or updates the configured OIDC client in Keycloak and synchronizes
+its client ID and secret to a Kubernetes Secret.
+
+The provisioner does not expose an application URL or require a Kubernetes
+Service or Ingress.
+
+**Client configuration:**
+
+  Keycloak realm: {{ .Values.keycloak.realm }}
+  Client ID:      {{ .Values.client.id }}
+  Client name:    {{ .Values.client.name }}
+  Output Secret:  {{ .Values.outputSecret.name }}
+
+**Check the provisioner Job:**
+
+  kubectl get jobs -n {{ .Release.Namespace }} \
+    -l app.kubernetes.io/instance={{ .Release.Name }}
+
+Note: Successful hook Jobs are automatically deleted. Failed Jobs are retained
+for troubleshooting.
+
+**Check the provisioner pods:**
+
+  kubectl get pods -n {{ .Release.Namespace }} \
+    -l app.kubernetes.io/instance={{ .Release.Name }}
+
+**View the provisioner logs:**
+
+  kubectl logs -n {{ .Release.Namespace }} \
+    -l app.kubernetes.io/instance={{ .Release.Name }} \
+    --all-containers=true
+
+**Check the generated Kubernetes Secret:**
+
+  kubectl get secret -n {{ .Release.Namespace }} \
+    {{ .Values.outputSecret.name }}
+
+**Inspect the generated Secret keys:**
+
+  kubectl describe secret -n {{ .Release.Namespace }} \
+    {{ .Values.outputSecret.name }}
+
+The generated Secret contains:
+
+  - {{ .Values.outputSecret.clientIdKey }}
+  - {{ .Values.outputSecret.clientSecretKey }}
+
+Applications can reference this Secret to configure their OIDC integration.
+
+To provision another Keycloak client, install another release of this chart
+with its own client configuration and output Secret.
